@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>ReproApp</RootNamespace>
+    <AssemblyName>ReproApp</AssemblyName>
+    <!-- .NET 10 SDK tries to copy staticwebassets.publish.endpoints.json which   -->
+    <!-- doesn't exist for net8.0 targets. Disabled because this app has no       -->
+    <!-- static web assets (no wwwroot, no Blazor, no JS/CSS bundles).            -->
+    <StaticWebAssetsEnabled>false</StaticWebAssetsEnabled>
+  </PropertyGroup>
+
+  <!-- Kudu WebJobs for the startup-fail scenario:
+       triggered/recover-startup  – manual recovery via Kudu POST (works while crashed)
+       continuous/recover-startup – automatic recovery: deletes flag + bounces ANCM
+                                     after the 60-second TTL expires -->
+  <ItemGroup>
+    <Content Include="App_Data\Jobs\triggered\recover-startup\run.cmd">
+      <CopyToPublishDirectory>Always</CopyToPublishDirectory>
+    </Content>
+    <Content Include="App_Data\Jobs\continuous\recover-startup\run.ps1">
+      <CopyToPublishDirectory>Always</CopyToPublishDirectory>
+    </Content>
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Azure App Service Repro Tool – Hub</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #0f0f0f;
+      color: #e5e5e5;
+      min-height: 100vh;
+      padding: 40px 24px 60px;
+    }
+
+    /* ── Header ─────────────────────────────────────── */
+    .hub-header {
+      text-align: center;
+      margin-bottom: 48px;
+    }
+    .hub-header h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: -0.5px;
+    }
+    .hub-header h1 span { color: #0078d4; }
+    .hub-header p {
+      margin-top: 8px;
+      color: #888;
+      font-size: 0.95rem;
+    }
+
+    /* ── Sections ────────────────────────────────────── */
+    .section {
+      max-width: 1100px;
+      margin: 0 auto 44px;
+    }
+    .section-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: #fff;
+      margin-bottom: 18px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #222;
+    }
+    .section-icon {
+      font-size: 1.3rem;
+    }
+
+    /* ── Cards grid ──────────────────────────────────── */
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+      gap: 18px;
+    }
+
+    .card {
+      background: #1a1a1a;
+      border: 1px solid #2a2a2a;
+      border-radius: 12px;
+      padding: 22px 22px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .card:hover {
+      border-color: #0078d4;
+      box-shadow: 0 0 0 1px #0078d430, 0 6px 24px #0003;
+    }
+
+    /* ── Card header ─────────────────────────────────── */
+    .card-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .card-name {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #fff;
+    }
+    .card-link {
+      font-size: 0.75rem;
+      color: #0078d4;
+      text-decoration: none;
+      word-break: break-all;
+      line-height: 1.4;
+      margin-top: 4px;
+      display: block;
+    }
+    .card-link:hover { text-decoration: underline; }
+
+    .open-btn {
+      flex-shrink: 0;
+      background: #0078d4;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 6px 12px;
+      font-size: 0.78rem;
+      cursor: pointer;
+      text-decoration: none;
+      white-space: nowrap;
+      line-height: 1.5;
+    }
+    .open-btn:hover { background: #106ebe; }
+
+    /* ── Badges ──────────────────────────────────────── */
+    .badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .badge {
+      border-radius: 20px;
+      padding: 3px 11px;
+      font-size: 0.72rem;
+      font-weight: 500;
+      letter-spacing: 0.3px;
+    }
+    .badge-fw   { background: #1a3a1a; color: #4ec94e; border: 1px solid #2d5a2d; }
+    .badge-os   { background: #1a2e3a; color: #5ac8fa; border: 1px solid #1e4a6e; }
+
+    /* ── Scenario buttons ────────────────────────────── */
+    .scenarios {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .scenarios label {
+      font-size: 0.72rem;
+      color: #666;
+      width: 100%;
+      margin-bottom: 2px;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+    }
+    .sc-btn {
+      text-decoration: none;
+      border: 1px solid #333;
+      border-radius: 6px;
+      padding: 4px 10px;
+      font-size: 0.76rem;
+      color: #ccc;
+      background: #111;
+      transition: background 0.15s, border-color 0.15s, color 0.15s;
+      white-space: nowrap;
+    }
+    .sc-btn:hover {
+      background: #222;
+      border-color: #555;
+      color: #fff;
+    }
+    .sc-btn.danger { border-color: #6e2020; color: #e05252; }
+    .sc-btn.danger:hover { background: #2a1010; border-color: #e05252; }
+    .sc-btn.warn  { border-color: #5a4200; color: #f0b429; }
+    .sc-btn.warn:hover  { background: #1e1500; border-color: #f0b429; }
+    .sc-btn.recover { border-color: #1a4a2a; color: #4ec94e; }
+    .sc-btn.recover:hover { background: #0d1f12; border-color: #4ec94e; color: #7ddb7d; }
+  </style>
+</head>
+<body>
+
+<header class="hub-header">
+  <h1>Azure App Service <span>Repro Tool</span></h1>
+  <p>Aggregation hub – 5 apps across Windows &amp; Linux, .NET / Python / Java</p>
+</header>
+
+<!-- ── Windows ───────────────────────────────────────── -->
+<section class="section">
+  <div class="section-title">
+    <span class="section-icon">🪟</span> Windows
+  </div>
+  <div class="cards">
+
+    <!-- .NET Win -->
+    <div class="card">
+      <div class="card-head">
+        <div>
+          <div class="card-name">.NET Dashboard – Windows</div>
+          <a class="card-link" href="https://reprobot-dotnet-win-jmcf01.azurewebsites.net" target="_blank">reprobot-dotnet-win-jmcf01.azurewebsites.net</a>
+        </div>
+        <a class="open-btn" href="https://reprobot-dotnet-win-jmcf01.azurewebsites.net" target="_blank">Open ↗</a>
+      </div>
+      <div class="badges">
+        <span class="badge badge-fw">ASP.NET Core 8</span>
+        <span class="badge badge-os">Windows</span>
+      </div>
+      <div class="scenarios">
+        <label>Scenarios</label>
+        <a class="sc-btn" href="https://reprobot-dotnet-win-jmcf01.azurewebsites.net/" target="_blank" title="Open main dashboard">Dashboard</a>
+        <a class="sc-btn warn" href="https://reprobot-dotnet-win-jmcf01.azurewebsites.net/slow" target="_blank" title="5-second artificial delay">Slow Response</a>
+        <a class="sc-btn warn" href="https://reprobot-dotnet-win-jmcf01.azurewebsites.net/cpu" target="_blank" title="100% CPU spike for 30 seconds">CPU Spike</a>
+        <a class="sc-btn warn" href="https://reprobot-dotnet-win-jmcf01.azurewebsites.net/memory" target="_blank" title="Allocate and hold 300 MB">Memory Pressure</a>
+        <a class="sc-btn warn" href="https://reprobot-dotnet-win-jmcf01.azurewebsites.net/snat" target="_blank" title="Open 100+ outbound TCP connections">SNAT Exhaustion</a>
+        <a class="sc-btn danger" href="https://reprobot-dotnet-win-jmcf01.azurewebsites.net/startup-fail" target="_blank" title="Writes flag + exits → next restart triggers ANCM HTTP 500.30">HTTP 500.30 Startup Fail</a>
+        <a class="sc-btn recover" href="https://reprobot-dotnet-win-jmcf01.azurewebsites.net/startup-fail/recover" target="_blank" title="Deletes startup flag – next restart succeeds">↩ Recover Startup</a>
+        <a class="sc-btn danger" href="https://reprobot-dotnet-win-jmcf01.azurewebsites.net/restart" target="_blank" title="Kills the process – app restarts">Force Restart</a>
+        <a class="sc-btn" href="https://reprobot-dotnet-win-jmcf01.azurewebsites.net/info" target="_blank" title="Runtime environment and counters">Env Info</a>
+      </div>
+    </div>
+
+    <!-- Java Win -->
+    <div class="card">
+      <div class="card-head">
+        <div>
+          <div class="card-name">Java Dashboard – Windows</div>
+          <a class="card-link" href="https://reprobot-java-win-jmcf01.azurewebsites.net" target="_blank">reprobot-java-win-jmcf01.azurewebsites.net</a>
+        </div>
+        <a class="open-btn" href="https://reprobot-java-win-jmcf01.azurewebsites.net" target="_blank">Open ↗</a>
+      </div>
+      <div class="badges">
+        <span class="badge badge-fw">Java 17 / Spring Boot</span>
+        <span class="badge badge-os">Windows</span>
+      </div>
+      <div class="scenarios">
+        <label>Scenarios</label>
+        <a class="sc-btn" href="https://reprobot-java-win-jmcf01.azurewebsites.net/" target="_blank" title="Open main dashboard">Dashboard</a>
+        <a class="sc-btn warn" href="https://reprobot-java-win-jmcf01.azurewebsites.net/slow" target="_blank" title="5-second artificial delay">Slow Response</a>
+        <a class="sc-btn warn" href="https://reprobot-java-win-jmcf01.azurewebsites.net/cpu" target="_blank" title="100% CPU spike for 30 seconds">CPU Spike</a>
+        <a class="sc-btn warn" href="https://reprobot-java-win-jmcf01.azurewebsites.net/memory" target="_blank" title="Allocate and hold 300 MB">Memory Pressure</a>
+        <a class="sc-btn warn" href="https://reprobot-java-win-jmcf01.azurewebsites.net/snat" target="_blank" title="Open 100+ outbound TCP connections">SNAT Exhaustion</a>
+        <a class="sc-btn danger" href="https://reprobot-java-win-jmcf01.azurewebsites.net/restart" target="_blank" title="Kills the process – app restarts">Force Restart</a>
+        <a class="sc-btn" href="https://reprobot-java-win-jmcf01.azurewebsites.net/info" target="_blank" title="Runtime environment and counters">Env Info</a>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ── Linux ────────────────────────────────────────── -->
+<section class="section">
+  <div class="section-title">
+    <span class="section-icon">🐧</span> Linux
+  </div>
+  <div class="cards">
+
+    <!-- .NET Lnx -->
+    <div class="card">
+      <div class="card-head">
+        <div>
+          <div class="card-name">.NET Dashboard – Linux</div>
+          <a class="card-link" href="https://reprobot-dotnet-lnx-jmcf01.azurewebsites.net" target="_blank">reprobot-dotnet-lnx-jmcf01.azurewebsites.net</a>
+        </div>
+        <a class="open-btn" href="https://reprobot-dotnet-lnx-jmcf01.azurewebsites.net" target="_blank">Open ↗</a>
+      </div>
+      <div class="badges">
+        <span class="badge badge-fw">ASP.NET Core 8</span>
+        <span class="badge badge-os">Linux</span>
+      </div>
+      <div class="scenarios">
+        <label>Scenarios</label>
+        <a class="sc-btn" href="https://reprobot-dotnet-lnx-jmcf01.azurewebsites.net/" target="_blank" title="Open main dashboard">Dashboard</a>
+        <a class="sc-btn warn" href="https://reprobot-dotnet-lnx-jmcf01.azurewebsites.net/slow" target="_blank" title="5-second artificial delay">Slow Response</a>
+        <a class="sc-btn warn" href="https://reprobot-dotnet-lnx-jmcf01.azurewebsites.net/cpu" target="_blank" title="100% CPU spike for 30 seconds">CPU Spike</a>
+        <a class="sc-btn warn" href="https://reprobot-dotnet-lnx-jmcf01.azurewebsites.net/memory" target="_blank" title="Allocate and hold 300 MB">Memory Pressure</a>
+        <a class="sc-btn warn" href="https://reprobot-dotnet-lnx-jmcf01.azurewebsites.net/snat" target="_blank" title="Open 100+ outbound TCP connections">SNAT Exhaustion</a>
+        <a class="sc-btn danger" href="https://reprobot-dotnet-lnx-jmcf01.azurewebsites.net/startup-fail" target="_blank" title="Writes flag + exits container – triggers restart loop">Container Startup Fail</a>
+        <a class="sc-btn recover" href="https://reprobot-dotnet-lnx-jmcf01.azurewebsites.net/startup-fail/recover" target="_blank" title="Deletes startup flag – next restart succeeds">↩ Recover Startup</a>
+        <a class="sc-btn danger" href="https://reprobot-dotnet-lnx-jmcf01.azurewebsites.net/oom" target="_blank" title="Allocates 512 MB until OOM killer fires">OOM Kill</a>
+        <a class="sc-btn danger" href="https://reprobot-dotnet-lnx-jmcf01.azurewebsites.net/restart" target="_blank" title="Kills the process – app restarts">Force Restart</a>
+        <a class="sc-btn" href="https://reprobot-dotnet-lnx-jmcf01.azurewebsites.net/info" target="_blank" title="Runtime environment and counters">Env Info</a>
+      </div>
+    </div>
+
+    <!-- Python Lnx -->
+    <div class="card">
+      <div class="card-head">
+        <div>
+          <div class="card-name">Python Dashboard – Linux</div>
+          <a class="card-link" href="https://reprobot-python-lnx-jmcf01.azurewebsites.net" target="_blank">reprobot-python-lnx-jmcf01.azurewebsites.net</a>
+        </div>
+        <a class="open-btn" href="https://reprobot-python-lnx-jmcf01.azurewebsites.net" target="_blank">Open ↗</a>
+      </div>
+      <div class="badges">
+        <span class="badge badge-fw">Python / Flask</span>
+        <span class="badge badge-os">Linux</span>
+      </div>
+      <div class="scenarios">
+        <label>Scenarios</label>
+        <a class="sc-btn" href="https://reprobot-python-lnx-jmcf01.azurewebsites.net/" target="_blank" title="Open main dashboard">Dashboard</a>
+        <a class="sc-btn warn" href="https://reprobot-python-lnx-jmcf01.azurewebsites.net/slow" target="_blank" title="5-second artificial delay">Slow Response</a>
+        <a class="sc-btn warn" href="https://reprobot-python-lnx-jmcf01.azurewebsites.net/cpu" target="_blank" title="100% CPU spike for 30 seconds">CPU Spike</a>
+        <a class="sc-btn warn" href="https://reprobot-python-lnx-jmcf01.azurewebsites.net/memory" target="_blank" title="Allocate and hold 300 MB">Memory Pressure</a>
+        <a class="sc-btn warn" href="https://reprobot-python-lnx-jmcf01.azurewebsites.net/snat" target="_blank" title="Open 100+ outbound TCP connections">SNAT Exhaustion</a>
+        <a class="sc-btn danger" href="https://reprobot-python-lnx-jmcf01.azurewebsites.net/startup-fail" target="_blank" title="Exits the Gunicorn worker – triggers container restart loop">Container Startup Fail</a>
+        <a class="sc-btn danger" href="https://reprobot-python-lnx-jmcf01.azurewebsites.net/oom" target="_blank" title="Allocates until OOM killer fires">OOM Kill</a>
+        <a class="sc-btn danger" href="https://reprobot-python-lnx-jmcf01.azurewebsites.net/restart" target="_blank" title="Kills the process – app restarts">Force Restart</a>
+        <a class="sc-btn" href="https://reprobot-python-lnx-jmcf01.azurewebsites.net/info" target="_blank" title="Runtime environment and counters">Env Info</a>
+      </div>
+    </div>
+
+    <!-- Java Lnx -->
+    <div class="card">
+      <div class="card-head">
+        <div>
+          <div class="card-name">Java Dashboard – Linux</div>
+          <a class="card-link" href="https://reprobot-java-lnx-jmcf01.azurewebsites.net" target="_blank">reprobot-java-lnx-jmcf01.azurewebsites.net</a>
+        </div>
+        <a class="open-btn" href="https://reprobot-java-lnx-jmcf01.azurewebsites.net" target="_blank">Open ↗</a>
+      </div>
+      <div class="badges">
+        <span class="badge badge-fw">Java 17 / Spring Boot</span>
+        <span class="badge badge-os">Linux</span>
+      </div>
+      <div class="scenarios">
+        <label>Scenarios</label>
+        <a class="sc-btn" href="https://reprobot-java-lnx-jmcf01.azurewebsites.net/" target="_blank" title="Open main dashboard">Dashboard</a>
+        <a class="sc-btn warn" href="https://reprobot-java-lnx-jmcf01.azurewebsites.net/slow" target="_blank" title="5-second artificial delay">Slow Response</a>
+        <a class="sc-btn warn" href="https://reprobot-java-lnx-jmcf01.azurewebsites.net/cpu" target="_blank" title="100% CPU spike for 30 seconds">CPU Spike</a>
+        <a class="sc-btn warn" href="https://reprobot-java-lnx-jmcf01.azurewebsites.net/memory" target="_blank" title="Allocate and hold 300 MB">Memory Pressure</a>
+        <a class="sc-btn warn" href="https://reprobot-java-lnx-jmcf01.azurewebsites.net/snat" target="_blank" title="Open 100+ outbound TCP connections">SNAT Exhaustion</a>
+        <a class="sc-btn danger" href="https://reprobot-java-lnx-jmcf01.azurewebsites.net/startup-fail" target="_blank" title="Exits the JVM – triggers container restart loop">Container Startup Fail</a>
+        <a class="sc-btn danger" href="https://reprobot-java-lnx-jmcf01.azurewebsites.net/oom" target="_blank" title="Allocates until OOM killer or JVM OutOfMemoryError fires">OOM Kill</a>
+        <a class="sc-btn danger" href="https://reprobot-java-lnx-jmcf01.azurewebsites.net/restart" target="_blank" title="Kills the process – app restarts">Force Restart</a>
+        <a class="sc-btn" href="https://reprobot-java-lnx-jmcf01.azurewebsites.net/info" target="_blank" title="Runtime environment and counters">Env Info</a>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<footer style="text-align:center;padding:32px 0 24px;color:#555;font-size:0.82rem">
+  Maintained by <a href="mailto:jofernandes@microsoft.com" style="color:#0078d4;text-decoration:none">jofernandes@microsoft.com</a><br/>
+  <a href="https://github.com/Cypheratom/azure-appservice-repro-tool" target="_blank" style="color:#0078d4;text-decoration:none">&#x1F4E6; github.com/Cypheratom/azure-appservice-repro-tool</a>
+</footer>
+
+</body>
+</html>
