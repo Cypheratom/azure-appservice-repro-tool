@@ -76,13 +76,13 @@ app.MapGet("/", () =>
       <details class="how"><summary>How it works</summary><p>Writes <code>startup-fail.flag</code> with a UTC timestamp then calls <code>Environment.Exit(1)</code> after 600&nbsp;ms (so the HTTP response returns first). On the next cold-start, the flag check throws before Kestrel binds &rarr; ANCM returns <strong>HTTP&nbsp;500.30</strong> (Windows) or the container enters a restart loop (Linux). Flag TTL&nbsp;= 30&nbsp;s; self-heals on expiry. The trigger page auto-polls <code>/startup-fail/recover?ack=1</code> &mdash; no Kudu or external trigger needed.</p></details>
     </div>
 """;
-    var oomCard = os == "Linux" ? """
-    <div class=\"card\">
+    var oomCard = os == "Linux" ? $"""
+    <div class="card">
       <h3>&#x1F9E0; OOM / Low Memory</h3>
       <p>Allocate until OOM killer fires or CLR throws OutOfMemoryException.<br/>Param: <code>?mb=512</code></p>
-      <a class=\"btn danger\" href=\"/oom?mb=512\" target=\"_blank\">512 MB</a>
-      <a class=\"btn danger\" href=\"/oom?mb=1024\" target=\"_blank\">1 GB</a>
-      <details class=\"how\"><summary>How it works</summary><p>Allocates in 50&nbsp;MB chunks touching every 4&nbsp;KB page to force the OS to commit each page. On Linux with a cgroup memory limit, the kernel OOM killer fires; otherwise CLR throws <code>OutOfMemoryException</code>. Unlike <code>/memory</code>, all chunks are freed in the <code>finally</code> block after the response.</p></details>
+      <a class="btn danger" href="/oom?mb=512" target="_blank">512 MB</a>
+      <a class="btn danger" href="/oom?mb=1024" target="_blank">1 GB</a>
+      <details class="how"><summary>How it works</summary><p>Allocates in 50&nbsp;MB chunks touching every 4&nbsp;KB page to force the OS to commit each page. On Linux with a cgroup memory limit, the kernel OOM killer fires; otherwise CLR throws <code>OutOfMemoryException</code>. Unlike <code>/memory</code>, all chunks are freed in the <code>finally</code> block after the response.</p></details>
     </div>
 """ : "";
     var linuxCards = startupFailCard + oomCard;
